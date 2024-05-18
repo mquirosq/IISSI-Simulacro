@@ -1,0 +1,33 @@
+Backend:
+1. Restaurantes promocionados aparecen en lo alto del listado (get my restaurants order)
+
+1. Ruta
+
+2. Validation
+    - Creation --> Check uniquely
+
+3. Toggle
+    - New endpoint + controller
+
+4. Order my restaurants get and clientes
+
+
+
+
+
+Frontend:
+- Creación:
+    - Defecto = no promocionado
+    - Validación --> Solo puede haber un restaurante promocionado pro propietario (si ya hay uno muerte)
+
+
+
+
+
+
+
+- Mis restaurantes:
+    - Botón --> Promociona
+        - Ya habia uno --> Toggle y promocionar el nuevo
+        - Pedir confirmación --> ConfirmationModal
+    - Promocionado --> Destaca con etiqueta primary

@@ -1,6 +1,21 @@
 import { check } from 'express-validator'
+import { Restaurant } from '../../models/models.js'
 import { checkFileIsImage, checkFileMaxSize } from './FileValidationHelper.js'
 const maxFileSize = 2000000 // around 2Mb
+
+const checkPromoted = async (promoted, { req }) => {
+  try {
+    if (promoted) {
+      const promotedRestaurant = await Restaurant.findOne({ where: { promoted: true } })
+      if (promotedRestaurant) {
+        return Promise.reject(new Error('Another product is already promoted'))
+      }
+    }
+    return Promise.resolve()
+  } catch (err) {
+    return Promise.reject(new Error(err))
+  }
+}
 
 const create = [
   check('name').exists().isString().isLength({ min: 1, max: 255 }).trim(),
@@ -13,6 +28,7 @@ const create = [
   check('phone').optional({ nullable: true, checkFalsy: true }).isString().isLength({ min: 1, max: 255 }).trim(),
   check('restaurantCategoryId').exists({ checkNull: true }).isInt({ min: 1 }).toInt(),
   check('userId').not().exists(),
+  check('promoted').custom(checkPromoted),
   check('heroImage').custom((value, { req }) => {
     return checkFileIsImage(req, 'heroImage')
   }).withMessage('Please upload an image with format (jpeg, png).'),

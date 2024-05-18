@@ -6,11 +6,12 @@ const index = async function (req, res) {
       {
         attributes: { exclude: ['userId'] },
         include:
-      {
-        model: RestaurantCategory,
-        as: 'restaurantCategory'
-      },
-        order: [[{ model: RestaurantCategory, as: 'restaurantCategory' }, 'name', 'ASC']]
+        {
+          model: RestaurantCategory,
+          as: 'restaurantCategory'
+        },
+        order: [['promoted', 'DESC'],
+          [{ model: RestaurantCategory, as: 'restaurantCategory' }, 'name', 'ASC']]
       }
     )
     res.json(restaurants)
@@ -28,7 +29,8 @@ const indexOwner = async function (req, res) {
         include: [{
           model: RestaurantCategory,
           as: 'restaurantCategory'
-        }]
+        }],
+        order: [['promoted', 'DESC']]
       })
     res.json(restaurants)
   } catch (err) {
@@ -95,12 +97,31 @@ const destroy = async function (req, res) {
   }
 }
 
+const promote = async function (req, res) {
+  try {
+    const promotedRestaurant = await Restaurant.findOne({ where: { promoted: true } })
+    if (promotedRestaurant) {
+      promotedRestaurant.promoted = false
+      await promotedRestaurant.save()
+    }
+
+    const restaurant = await Restaurant.findByPk(req.params.restaurantId)
+    restaurant.promoted = true
+
+    const updatedRestaurant = await restaurant.save()
+    res.json(updatedRestaurant)
+  } catch (err) {
+    res.status(500).send(err)
+  }
+}
+
 const RestaurantController = {
   index,
   indexOwner,
   create,
   show,
   update,
-  destroy
+  destroy,
+  promote
 }
 export default RestaurantController

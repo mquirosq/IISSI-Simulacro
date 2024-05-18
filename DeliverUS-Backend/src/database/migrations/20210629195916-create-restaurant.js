@@ -40,6 +40,11 @@ module.exports = {
       phone: {
         type: Sequelize.STRING
       },
+      promoted: {
+        allowNull: false,
+        type: Sequelize.BOOLEAN,
+        defaultValue: false
+      },
       logo: {
         type: Sequelize.STRING
       },

@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react'
-import { Image, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native'
+import { Image, Platform, Pressable, ScrollView, StyleSheet, View, Switch } from 'react-native'
 import * as ExpoImagePicker from 'expo-image-picker'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
 import * as yup from 'yup'
 import DropDownPicker from 'react-native-dropdown-picker'
-import { create, getRestaurantCategories } from '../../api/RestaurantEndpoints'
+import { create, getAll, getRestaurantCategories } from '../../api/RestaurantEndpoints'
 import InputItem from '../../components/InputItem'
 import TextRegular from '../../components/TextRegular'
 import * as GlobalStyles from '../../styles/GlobalStyles'
@@ -19,7 +19,7 @@ export default function CreateRestaurantScreen ({ navigation }) {
   const [restaurantCategories, setRestaurantCategories] = useState([])
   const [backendErrors, setBackendErrors] = useState()
 
-  const initialRestaurantValues = { name: null, description: null, address: null, postalCode: null, url: null, shippingCosts: null, email: null, phone: null, restaurantCategoryId: null }
+  const initialRestaurantValues = { name: null, description: null, address: null, postalCode: null, url: null, shippingCosts: null, email: null, phone: null, restaurantCategoryId: null, promoted: false }
   const validationSchema = yup.object().shape({
     name: yup
       .string()
@@ -45,6 +45,16 @@ export default function CreateRestaurantScreen ({ navigation }) {
       .string()
       .nullable()
       .email('Please enter a valid email'),
+    promoted: yup
+      .boolean()
+      .test('promoted', 'There is already a restaurant promoted', async (promoted) => {
+        if (promoted) {
+          const restaurants = await getAll()
+          return (restaurants.filter(restaurant => restaurant.promoted).lenght > 0)
+        } else {
+          return true
+        }
+      }),
     phone: yup
       .string()
       .nullable()
@@ -178,6 +188,18 @@ export default function CreateRestaurantScreen ({ navigation }) {
               />
               <ErrorMessage name={'restaurantCategoryId'} render={msg => <TextError>{msg}</TextError> }/>
 
+              <TextRegular style= {{ margin: 20 }}>Is it promoted?</TextRegular>
+              <Switch
+                trackColor={{ false: GlobalStyles.brandSecondary, true: GlobalStyles.brandPrimary }}
+                thumbColor={values.promoted ? GlobalStyles.brandSecondary : '#f4f3f4'}
+                value={values.promoted}
+                style={styles.switch}
+                onValueChange={value =>
+                  setFieldValue('promoted', value)
+                }
+              />
+              <ErrorMessage name={'promoted'} render={msg => <TextError>{msg}</TextError> }/>
+
               <Pressable onPress={() =>
                 pickImage(
                   async result => {
@@ -260,5 +282,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignSelf: 'center',
     marginTop: 5
+  },
+  switch: {
+    marginTop: 2
   }
 })
